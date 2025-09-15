@@ -1,31 +1,41 @@
-import os
+from typing import Any, List, Dict
 import pandas as pd
 import numpy as np
+import os
 
 class DataTypeDetector:
-    def init(self, data):
-        self.data = data
-
-    def detect(self):
-        if isinstance(self.data, pd.DataFrame):
+    """
+    Detects the specific data type of a given input to route it for
+    appropriate processing in a RAG pipeline.
+    """
+    def detect(self, data: Any) -> str:
+        """
+        Analyzes the data and returns a string identifier for its type.
+        Args:
+            data: The input data to analyze (e.g., filepath, DataFrame, text).
+        Returns:
+            A string representing the detected data type.
+        """
+        if isinstance(data, pd.DataFrame):
             return "dataframe"
 
-        elif isinstance(self.data, list):
-            if all(isinstance(d, dict) and "content" in d for d in self.data):
+        elif isinstance(data, list):
+            if all(isinstance(d, dict) and "content" in d for d in data):
                 return "preprocessed"
 
             else:
                 return "list"
 
-        elif isinstance(self.data, np.ndarray):
+        elif isinstance(data, np.ndarray):
             return "ndarray"
 
-        elif isinstance(self.data, str):
-            if os.path.isdir(self.data):
+        elif isinstance(data, str):
+            if os.path.isdir(data):
                 return "folder"
 
-            elif os.path.isfile(self.data):
-                ext = os.path.splitext(self.data)[1].lower()
+            elif os.path.isfile(data):
+                ext = os.path.splitext(data)[1].lower()
+
                 if ext in [".mp4", ".avi", ".mov"]:
                     return "video_file"
 
@@ -35,8 +45,11 @@ class DataTypeDetector:
                 elif ext in [".jpg", ".jpeg", ".png", ".bmp"]:
                     return "image_file"
 
-                elif ext in [".csv", ".xlsx"]:
+                elif ext in [".csv", ".xlsx", ".xls"]:
                     return "table_file"
+
+                elif ext in [".txt", ".md", ".pdf", ".docx"]:
+                    return "document_file"
 
                 else:
                     return "file"
